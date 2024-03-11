@@ -1,0 +1,10 @@
+data
+dataset
+.vscode
+.idea
+.venv
+output
+*/__pycache__/*
+__pycache__/
+mak/__pycache__/
+utils
