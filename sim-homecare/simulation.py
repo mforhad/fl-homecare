@@ -10,7 +10,7 @@ import flwr as fl
 from flwr.common import Metrics
 from flwr.common.typing import Scalar
 
-from mak.utils import Net, train, test, get_mnist, LeNet
+from mak.utils import train, test, LeNet
 from mak.dataloader import data_loader
 import mak
 
