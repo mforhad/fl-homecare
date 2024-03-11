@@ -59,11 +59,13 @@ class FlowerClient(fl.client.NumPyClient):
 
         # Construct dataloader
         trainloader = DataLoader(self.trainset, batch_size=batch, shuffle=True)
+        valloader = DataLoader(self.valset, batch_size=batch, shuffle=False)
 
         # Define optimizer
         optimizer = torch.optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
         # Train
-        train(self.model, trainloader, optimizer, epochs=epochs, device=self.device)
+        # train(self.model, trainloader, optimizer, epochs=epochs, device=self.device)
+        train(self.model, trainloader, valloader, optimizer, num_epochs=epochs, device=self.device)
 
         # Return local model and statistics
         return self.get_parameters({}), len(trainloader.dataset), {}
@@ -72,7 +74,7 @@ class FlowerClient(fl.client.NumPyClient):
         set_params(self.model, parameters)
 
         # Construct dataloader
-        valloader = DataLoader(self.valset, batch_size=64)
+        valloader = DataLoader(self.valset, batch_size=16)
 
         # Evaluate
         loss, accuracy = test(self.model, valloader, device=self.device)
@@ -103,8 +105,8 @@ def get_client_fn(train_partitions, val_partitions):
 def fit_config(server_round: int) -> Dict[str, Scalar]:
     """Return a configuration with static batch size and (local) epochs."""
     config = {
-        "epochs": 1,  # Number of local epochs done by clients
-        "batch_size": 32,  # Batch size to use by clients during fit()
+        "epochs": 10,  # Number of local epochs done by clients
+        "batch_size": 16,  # Batch size to use by clients during fit()
     }
     return config
 
@@ -181,7 +183,7 @@ def get_evaluate_fn(
         set_params(model, parameters)
         model.to(device)
 
-        testloader = DataLoader(testset, batch_size=50)
+        testloader = DataLoader(testset, batch_size=16)
         loss, accuracy = test(model, testloader, device=device)
 
         return loss, {"accuracy": accuracy}
@@ -202,7 +204,7 @@ def main():
         fraction_evaluate=0.05,  # Sample 5% of available clients for evaluation
         min_fit_clients=10,  # Never sample less than 10 clients for training
         min_evaluate_clients=5,  # Never sample less than 5 clients for evaluation
-        min_available_clients= NUM_CLIENTS ,
+        min_available_clients=NUM_CLIENTS ,
         on_fit_config_fn=fit_config,
         evaluate_metrics_aggregation_fn=weighted_average,  # Aggregate federated metrics
         evaluate_fn=get_evaluate_fn(testset),  # Global evaluation function
@@ -226,7 +228,7 @@ def main():
         client_resources=client_resources,
         config=fl.server.ServerConfig(num_rounds=args.num_rounds),
         strategy=strategy,
-        ray_init_args = ray_init_args,
+        ray_init_args=ray_init_args,
     )
 
 

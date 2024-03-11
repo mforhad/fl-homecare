@@ -60,7 +60,7 @@ class LeNet(nn.Module):
         self.fc3 = nn.Linear(128, 2)
 
     def forward(self, x):
-        # print(x.shape)
+        print(x.shape)
         x = nn.functional.relu(self.conv1(x.permute(0, 2, 1)))
         x = nn.functional.max_pool1d(x, 3)
         x = nn.functional.relu(self.conv2(x))
@@ -117,8 +117,8 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
         scheduler.step()
 
 
-def test_model(model, test_loader, device, y_test, group_test):
-# def test_model(model, test_loader, device):
+# def test_model(model, test_loader, device, y_test, group_test):
+def test_model(model, test_loader, device):
     # Test model
     model.eval()
     with torch.no_grad():
@@ -143,20 +143,18 @@ def test_model(model, test_loader, device, y_test, group_test):
             outputs = model(inputs)
             y_score.extend(outputs.cpu().numpy()[:, 1])
 
-    output = pd.DataFrame({"y_true": y_test, "y_score": y_score, "subject": groups_test})
-    output.to_csv(os.path.join("output", "LeNet_pytorch.csv"), index=False)
+    # output = pd.DataFrame({"y_true": y_test, "y_score": y_score, "subject": groups_test})
+    # output.to_csv(os.path.join("output", "LeNet_pytorch.csv"), index=False)
 
 
 if __name__ == "__main__":
     x_train, y_train, groups_train, x_test, y_test, groups_test = load_data()
 
     # Convert to PyTorch tensors
-    x_train_tensor = torch.from_numpy(x_train)[:16700]
-    y_train_tensor = torch.from_numpy(y_train)[:16700]
-    x_test_tensor = torch.from_numpy(x_test)[:16700]
-    y_test_tensor = torch.from_numpy(y_test)[:16700]
-    groups_train = groups_train[:16700]
-    groups_test = groups_test[:16700]
+    x_train_tensor = torch.from_numpy(x_train)
+    y_train_tensor = torch.from_numpy(y_train)
+    x_test_tensor = torch.from_numpy(x_test)
+    y_test_tensor = torch.from_numpy(y_test)
 
     # Create DataLoader
     train_dataset = TensorDataset(x_train_tensor, y_train_tensor)
@@ -173,14 +171,14 @@ if __name__ == "__main__":
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters())
-    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: lr_schedule(epoch, 0.155))
+    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: lr_schedule(epoch, 0.0155))
 
-    num_epochs = 5
+    num_epochs = 15
     train_model(model, train_loader, test_loader, criterion, optimizer, scheduler, num_epochs=num_epochs)
 
     # Save model
     torch.save(model.state_dict(), "model.pth")
 
-    test_model(model, test_loader, device, y_test_tensor, groups_test)
+    test_model(model, test_loader, device, y_test, groups_test)
     # test_model(model, test_loader, device)
 
