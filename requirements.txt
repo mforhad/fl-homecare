@@ -1,0 +1,15 @@
+tensorflow
+numpy
+matplotlib
+pandas
+scipy
+biosppy
+wfdb
+tqdm
+pydot
+flwr[simulation]
+PyYAML
+tensorflow-cpu
+torch
+torchvision
+flwr_datasets
