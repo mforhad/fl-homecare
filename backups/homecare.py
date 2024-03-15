@@ -14,7 +14,7 @@ import flwr as fl
 from flwr.common import Metrics
 from flwr.common.typing import Scalar
 from typing import Dict, List, Tuple
-from mak import homecare_utils as LeNet
+from utils import homecare_utils as LeNet
 
 parser = argparse.ArgumentParser(description="Tutorial on using multi-node Flower Simulation with PyTorch")
 
@@ -255,7 +255,7 @@ def main():
     }
 
     # if args.multi_node:
-    #     ray_init_args = {"address" : "auto","runtime_env" : {"py_modules" : [mak]}} #if multi-node cluster is used
+    #     ray_init_args = {"address" : "auto","runtime_env" : {"py_modules" : [utils]}} #if multi-node cluster is used
     # else:
     #     ray_init_args = {}
 

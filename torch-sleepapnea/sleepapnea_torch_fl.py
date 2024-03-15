@@ -230,7 +230,7 @@ def main():
     }
 
     # if args.multi_node:
-    #     ray_init_args = {"address" : "auto","runtime_env" : {"py_modules" : [mak]}} #if multi-node cluster is used
+    #     ray_init_args = {"address" : "auto","runtime_env" : {"py_modules" : [utils]}} #if multi-node cluster is used
     # else:
     ray_init_args = {}
 

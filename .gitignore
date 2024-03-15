@@ -6,5 +6,5 @@ dataset
 output
 */__pycache__/*
 __pycache__/
-mak/__pycache__/
+sim-flwr-mnist/mak/__pycache__/
 utils

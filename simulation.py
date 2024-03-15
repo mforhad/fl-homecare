@@ -10,9 +10,9 @@ import flwr as fl
 from flwr.common import Metrics
 from flwr.common.typing import Scalar
 
-from mak.utils import Net, train, test, get_mnist, LeNet
-from mak.dataloader import data_loader
-import mak
+from utils.utils import train, test, LeNet
+from utils.dataloader import data_loader
+import utils
 
 
 parser = argparse.ArgumentParser(description="Tutorial on using multi-node Flower Simulation with PyTorch")
@@ -217,7 +217,7 @@ def main():
     }
 
     if args.multi_node:
-        ray_init_args = {"address" : "auto","runtime_env" : {"py_modules" : [mak]}} #if multi-node cluster is used
+        ray_init_args = {"address" : "auto","runtime_env" : {"py_modules" : [utils]}} #if multi-node cluster is used
     else:
         ray_init_args = {}
 

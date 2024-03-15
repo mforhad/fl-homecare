@@ -144,7 +144,7 @@ def test_model(model, test_loader, device, y_test, group_test):
             y_score.extend(outputs.cpu().numpy()[:, 1])
 
     output = pd.DataFrame({"y_true": y_test, "y_score": y_score, "subject": groups_test})
-    output.to_csv(os.path.join("output", "LeNet_pytorch.csv"), index=False)
+    output.to_csv(os.path.join("../output", "LeNet_pytorch.csv"), index=False)
 
 
 if __name__ == "__main__":
