@@ -184,6 +184,8 @@ def get_evaluate_fn(
         model.to(device)
 
         testloader = DataLoader(testset, batch_size=16)
+
+        print("########## Evaluating the model  ####################")
         loss, accuracy = test(model, testloader, device=device)
 
         return loss, {"accuracy": accuracy}
