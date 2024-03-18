@@ -97,7 +97,7 @@ def get_client_fn(train_partitions, val_partitions):
         trainset, valset = train_partitions[int(cid)], val_partitions[int(cid)]
 
         # Create and return client
-        return FlowerClient(trainset, valset)
+        return FlowerClient(trainset, valset).to_client()
 
     return client_fn
 
@@ -236,5 +236,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    # added another commit

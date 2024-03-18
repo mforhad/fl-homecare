@@ -2,13 +2,20 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.tensorboard import SummaryWriter
+
 import numpy as np
 import pandas as pd
 import os
 import pickle
 from scipy.interpolate import splev, splrep
 
-base_dir = "dataset"
+import shap
+
+writer = SummaryWriter()
+
+
+base_dir = "../dataset"
 ir = 3  # interpolate interval
 before = 2
 after = 2
@@ -91,6 +98,7 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels)
+            writer.add_scalar("Loss/train", loss, epoch)
             loss.backward()
             optimizer.step()
 
@@ -113,6 +121,8 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, schedule
             epoch_acc = correct / total
 
             print(f"Val Loss: {epoch_loss:.4f} | Val Acc: {epoch_acc:.4f}")
+            writer.add_scalar("Val/loss", epoch_loss, epoch)
+            writer.add_scalar("Val/acc", epoch_acc, epoch)
 
         scheduler.step()
 
@@ -171,16 +181,19 @@ if __name__ == "__main__":
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
+
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters())
-    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: lr_schedule(epoch, 0.155))
+    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: lr_schedule(epoch, 0.0015))
 
-    num_epochs = 5
+    num_epochs = 200
     train_model(model, train_loader, test_loader, criterion, optimizer, scheduler, num_epochs=num_epochs)
 
     # Save model
     torch.save(model.state_dict(), "model.pth")
 
     test_model(model, test_loader, device, y_test_tensor, groups_test)
-    # test_model(model, test_loader, device)
 
+    writer.flush()
+
+    writer.close()
