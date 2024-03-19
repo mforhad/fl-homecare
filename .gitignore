@@ -7,3 +7,4 @@ output
 */__pycache__/*
 __pycache__/
 sim-flwr-mnist/mak/__pycache__/
+utils/secrets/*

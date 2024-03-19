@@ -195,5 +195,4 @@ if __name__ == "__main__":
     test_model(model, test_loader, device, y_test_tensor, groups_test)
 
     writer.flush()
-
     writer.close()
