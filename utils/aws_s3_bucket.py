@@ -6,7 +6,7 @@ import torch
 import torch.utils.data as data_utils
 
 from io import BytesIO
-from utils import read_secret_keys
+from utils.utils import read_secret_keys
 
 # Replace these values with your own 
 AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY = read_secret_keys()
@@ -40,7 +40,7 @@ def load_npy_from_s3(s3_key):
     return np_data
 
 
-def load_data_from_aws():
+def load_data_from_s3():
     train_features = torch.tensor(load_npy_from_s3(S3_KEYS[0]))
     test_features = torch.tensor(load_npy_from_s3(S3_KEYS[1]))
     train_labels = torch.tensor(load_npy_from_s3(S3_KEYS[2]))
@@ -64,5 +64,3 @@ def load_data_from_aws():
 
 
     return train_datasets, test_datasets
-
-load_data_from_aws()

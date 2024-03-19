@@ -12,6 +12,8 @@ from flwr.common.typing import Scalar
 
 from utils.utils import train, test, LeNet
 from utils.dataloader import data_loader
+from utils.aws_s3_bucket import load_data_from_s3
+
 import utils
 
 
@@ -33,6 +35,7 @@ parser.add_argument("--multi_node", type=bool, default=False, help="Use in multi
 parser.add_argument("--num_rounds", type=int, default=10, help="Number of FL rounds.")
 
 NUM_CLIENTS = 100
+DATA_FROM_S3_BUCKET = True
 
 
 # Flower client, adapted from Pytorch quickstart example
@@ -121,9 +124,10 @@ def set_params(model: torch.nn.ModuleList, params: List[fl.common.NDArrays]):
 def prepare_dataset():
     """Download and partitions the MNIST dataset."""
 
-    # Get the MNIST dataset
-    # trainset, testset = get_mnist()
-    trainset, testset = data_loader()
+    if DATA_FROM_S3_BUCKET:
+        trainset, testset = load_data_from_s3()
+    else:
+        trainset, testset = data_loader()
 
     # Split trainset into `num_partitions` trainsets
     data_points_per_client = len(trainset) // NUM_CLIENTS

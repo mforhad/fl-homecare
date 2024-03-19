@@ -8,3 +8,6 @@ output
 __pycache__/
 sim-flwr-mnist/mak/__pycache__/
 utils/secrets/*
+shap/mnist_data/*
+output/*
+*/runs/*

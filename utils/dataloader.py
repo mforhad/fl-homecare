@@ -102,4 +102,4 @@ def data_loader():
 
     return train_datasets, test_datasets
 
-data_loader()
+# data_loader()
