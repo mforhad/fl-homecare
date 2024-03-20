@@ -8,6 +8,7 @@ output
 __pycache__/
 sim-flwr-mnist/mak/__pycache__/
 utils/secrets/*
-shap/mnist_data/*
+torch-federated/secrets/*
+explain-model/mnist_data/*
 output/*
 */runs/*
