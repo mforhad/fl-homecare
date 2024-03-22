@@ -12,3 +12,7 @@ torch-federated/secrets/*
 explain-model/mnist_data/*
 output/*
 */runs/*
+torch-federated/secrets/*
+torch-simulation/utils/secrets/*
+torch-federated/data/*
+torch-simulation/data/*

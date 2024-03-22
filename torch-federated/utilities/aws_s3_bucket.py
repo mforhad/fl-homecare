@@ -6,7 +6,7 @@ import torch
 import torch.utils.data as data_utils
 
 from io import BytesIO
-from utils import read_s3_secret_keys
+from .utils import read_s3_secret_keys
 
 # Replace these values with your own 
 AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY = read_s3_secret_keys()

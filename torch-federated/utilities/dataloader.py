@@ -3,12 +3,10 @@ from torch.utils.data import TensorDataset, DataLoader, random_split
 
 import numpy as np
 
-from aws_s3_bucket import load_data_from_s3
+from .aws_s3_bucket import load_data_from_s3
+from .fl_config import FlHomecareConfig
 
-
-DATA_FROM_S3_BUCKET = True
-NUM_CLIENTS = 2
-
+fl_config = FlHomecareConfig()
 
 def load_numpy_tensor(file_name):
     file_path = "data/sleepapnea" + file_name + ".npy"
@@ -35,17 +33,17 @@ def data_loader():
     return train_datasets, test_datasets
 
 
-def load_partition(partition_id, batch_size=16, val_ratio=0.1):
+def load_partition(partition_id, batch_size=fl_config.batch_size, val_ratio=fl_config.val_ratio):
     """Download and partitions the MNIST dataset."""
 
-    if DATA_FROM_S3_BUCKET:
+    if fl_config.data_from_s3:
         trainset, testset = load_data_from_s3()
     else:
         trainset, testset = data_loader()
 
     # Split trainset into `num_partitions` trainsets
-    data_points_per_client = len(trainset) // NUM_CLIENTS
-    partition_len = [data_points_per_client] * NUM_CLIENTS
+    data_points_per_client = len(trainset) // fl_config.num_clients
+    partition_len = [data_points_per_client] * fl_config.num_clients
     print("data_points_per_client", data_points_per_client)
     print("partition_len", partition_len)
 
@@ -76,5 +74,4 @@ def load_partition(partition_id, batch_size=16, val_ratio=0.1):
     valloader = DataLoader(val_partitions[partition_id], batch_size=batch_size, shuffle=False)
     testloader = DataLoader(test_partition[partition_id], batch_size=batch_size, shuffle=False)
 
-    # return train_partitions[partition_id], val_partitions[partition_id], test_partition[partition_id]
     return trainloader, valloader, testloader
