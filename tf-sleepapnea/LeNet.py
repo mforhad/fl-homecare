@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
     from keras.utils import plot_model
 
-    plot_model(model, "model.png") # Plot model
+    plot_model(model, "../model.png") # Plot model
 
     # model = keras.utils.multi_gpu_model(model, gpus=2) # Multi-gpu acceleration (optional)
     # Check if multiple GPUs are available
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     lr_scheduler = LearningRateScheduler(lr_schedule) # Dynamic adjustment learning rate
     history = model.fit(x_train, y_train, batch_size=128, epochs=5, validation_data=(x_test, y_test),
                         callbacks=[lr_scheduler])
-    model.save(os.path.join("models", "model.final.h5")) # Save training model
+    model.save(os.path.join("../models", "model.final.h5")) # Save training model
 
     loss, accuracy = model.evaluate(x_test, y_test) # test the model
     print("Test loss: ", loss)
@@ -149,6 +149,6 @@ if __name__ == "__main__":
     # save prediction score
     y_score = model.predict(x_test)
     output = pd.DataFrame({"y_true": y_test[:, 1], "y_score": y_score[:, 1], "subject": groups_test})
-    output.to_csv(os.path.join("output", "LeNet.csv"), index=False)
+    output.to_csv(os.path.join("../output", "LeNet.csv"), index=False)
 
     plot(history.history)

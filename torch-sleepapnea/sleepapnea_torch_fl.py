@@ -4,15 +4,15 @@ from typing import Dict, Tuple, List
 
 import torch
 import torchvision
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, random_split, TensorDataset
+import torch.nn as nn
+import torch.optim as optim
 
 import flwr as fl
 from flwr.common import Metrics
 from flwr.common.typing import Scalar
 
-from mak.utils import Net, train, test, get_mnist, LeNet
-from mak.dataloader import data_loader
-import mak
+from sleepapnea_torch import LeNet, load_data, train_model, test_model, lr_schedule
 
 
 parser = argparse.ArgumentParser(description="Tutorial on using multi-node Flower Simulation with PyTorch")
@@ -45,7 +45,7 @@ class FlowerClient(fl.client.NumPyClient):
         self.model = LeNet()
 
         # Determine device
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)  # send model to device
 
     def get_parameters(self, config):
@@ -59,11 +59,17 @@ class FlowerClient(fl.client.NumPyClient):
 
         # Construct dataloader
         trainloader = DataLoader(self.trainset, batch_size=batch, shuffle=True)
+        valloader = DataLoader(self.valset, batch_size=batch, shuffle=False)
 
         # Define optimizer
-        optimizer = torch.optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
+        # optimizer = torch.optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9)
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(self.model.parameters())
+        scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: lr_schedule(epoch, 0.15))
         # Train
-        train(self.model, trainloader, optimizer, epochs=epochs, device=self.device)
+        train_model(self.model, trainloader, valloader, criterion, optimizer, scheduler, num_epochs=epochs)
+
+        torch.save(self.model.state_dict(), "model.pth")
 
         # Return local model and statistics
         return self.get_parameters({}), len(trainloader.dataset), {}
@@ -75,7 +81,7 @@ class FlowerClient(fl.client.NumPyClient):
         valloader = DataLoader(self.valset, batch_size=64)
 
         # Evaluate
-        loss, accuracy = test(self.model, valloader, device=self.device)
+        loss, accuracy = test_model(self.model, valloader, self.device)
 
         # Return statistics
         return float(loss), len(valloader.dataset), {"accuracy": float(accuracy)}
@@ -116,18 +122,16 @@ def set_params(model: torch.nn.ModuleList, params: List[fl.common.NDArrays]):
     model.load_state_dict(state_dict, strict=True)
 
 
-def prepare_dataset():
+def prepare_dataset(trainset):
     """Download and partitions the MNIST dataset."""
 
     # Get the MNIST dataset
+    # 60000x28x28
     # trainset, testset = get_mnist()
-    trainset, testset = data_loader()
 
     # Split trainset into `num_partitions` trainsets
-    data_points_per_client = len(trainset) // NUM_CLIENTS
-    partition_len = [data_points_per_client] * NUM_CLIENTS
-    print("data_points_per_client", data_points_per_client)
-    print("partition_len", partition_len)
+    num_data_per_client = len(trainset) // NUM_CLIENTS
+    partition_len = [num_data_per_client] * NUM_CLIENTS
 
     trainsets = random_split(
         trainset, partition_len, torch.Generator().manual_seed(2023)
@@ -150,7 +154,7 @@ def prepare_dataset():
         train_partitions.append(for_train)
         val_partitions.append(for_val)
 
-    return train_partitions, val_partitions, testset
+    return train_partitions, val_partitions
 
 
 def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
@@ -165,7 +169,7 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
 
 
 def get_evaluate_fn(
-    testset
+    testset,
 ):
     """Return an evaluation function for centralized evaluation."""
 
@@ -182,7 +186,7 @@ def get_evaluate_fn(
         model.to(device)
 
         testloader = DataLoader(testset, batch_size=50)
-        loss, accuracy = test(model, testloader, device=device)
+        loss, accuracy = test_model(model, testloader, device=device)
 
         return loss, {"accuracy": accuracy}
 
@@ -193,8 +197,19 @@ def main():
     # Parse input arguments
     args = parser.parse_args()
 
-    # Download CIFAR-10 dataset and partition it
-    trainsets, valsets, testset = prepare_dataset()
+    x_train, y_train, groups_train, x_test, y_test, groups_test = load_data()
+
+    # Convert to PyTorch tensors
+    x_train_tensor = torch.from_numpy(x_train)
+    y_train_tensor = torch.from_numpy(y_train)
+    x_test_tensor = torch.from_numpy(x_test)
+    y_test_tensor = torch.from_numpy(y_test)
+
+    # Create DataLoader
+    train_dataset = TensorDataset(x_train_tensor, y_train_tensor)
+    test_dataset = TensorDataset(x_test_tensor, y_test_tensor)
+
+    train_dataset, val_dataset = prepare_dataset(train_dataset)
 
     # Configure the strategy
     strategy = fl.server.strategy.FedAvg(
@@ -205,7 +220,7 @@ def main():
         min_available_clients= NUM_CLIENTS ,
         on_fit_config_fn=fit_config,
         evaluate_metrics_aggregation_fn=weighted_average,  # Aggregate federated metrics
-        evaluate_fn=get_evaluate_fn(testset),  # Global evaluation function
+        evaluate_fn=get_evaluate_fn(test_dataset),  # Global evaluation function
     )
 
     # Resources to be assigned to each virtual client
@@ -214,23 +229,21 @@ def main():
         "num_gpus": args.num_gpus,
     }
 
-    if args.multi_node:
-        ray_init_args = {"address" : "auto","runtime_env" : {"py_modules" : [mak]}} #if multi-node cluster is used
-    else:
-        ray_init_args = {}
+    # if args.multi_node:
+    #     ray_init_args = {"address" : "auto","runtime_env" : {"py_modules" : [utils]}} #if multi-node cluster is used
+    # else:
+    ray_init_args = {}
 
     # Start simulation
     fl.simulation.start_simulation(
-        client_fn=get_client_fn(trainsets, valsets),
+        client_fn=get_client_fn(train_dataset, test_dataset),
         num_clients=NUM_CLIENTS,
         client_resources=client_resources,
         config=fl.server.ServerConfig(num_rounds=args.num_rounds),
         strategy=strategy,
-        ray_init_args = ray_init_args,
+        ray_init_args=ray_init_args,
     )
 
 
 if __name__ == "__main__":
     main()
-
-    # added another commit

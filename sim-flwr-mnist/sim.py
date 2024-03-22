@@ -102,7 +102,7 @@ def get_client_fn(train_partitions, val_partitions):
 def fit_config(server_round: int) -> Dict[str, Scalar]:
     """Return a configuration with static batch size and (local) epochs."""
     config = {
-        "epochs": 1,  # Number of local epochs done by clients
+        "epochs": 20,  # Number of local epochs done by clients
         "batch_size": 32,  # Batch size to use by clients during fit()
     }
     return config

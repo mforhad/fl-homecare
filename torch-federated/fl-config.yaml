@@ -1,0 +1,8 @@
+# config.yaml
+num_epochs: 5
+num_clients: 2
+num_rounds: 2
+batch_size: 16
+val_ratio: 0.1
+lr: 0.155
+data_from_s3: True

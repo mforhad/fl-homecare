@@ -13,8 +13,8 @@ def save_numpy_tensor(numpy_tensor, file_name):
 
 
 def load_numpy_tensor(file_name):
-    save_file_path = "/home/forhad/thesis/projects/fl-homecare/sim-homecare/data/sleepapnea" + file_name + ".npy"
-    return np.load(save_file_path)
+    file_path = "data/sleepapnea" + file_name + ".npy"
+    return np.load(file_path)
 
 
 def load_data():
@@ -61,11 +61,6 @@ def load_data():
     save_numpy_tensor(y_train, "train_labels")
     save_numpy_tensor(y_test, "test_labels")
 
-    # x_train (16709, 900, 2)
-    # y_train (16709,)
-    # x_test (16945, 900, 2)
-    # y_test (16945,)
-
     return x_train, y_train, groups_train, x_test, y_test, groups_test
 
 # load_data()
@@ -107,4 +102,4 @@ def data_loader():
 
     return train_datasets, test_datasets
 
-data_loader()
+# data_loader()

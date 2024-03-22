@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 # PhysioNet Apnea-ECG dataset
 # url: https://physionet.org/physiobank/database/apnea-ecg/
-base_dir = "dataset"
+base_dir = "../dataset"
 
 fs = 100
 sample = fs * 60  # 1 min's sample points
@@ -121,3 +121,4 @@ if __name__ == "__main__":
         pickle.dump(apnea_ecg, f, protocol=2)
 
     print("\nok!")
+

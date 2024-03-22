@@ -50,7 +50,7 @@ def load_data():
 if __name__ == "__main__":
     (x_train, y_train, groups_train), (x_test, y_test, groups_test) = load_data()
 
-    model = load_model(os.path.join("./models", "model.final.h5"))
+    model = load_model(os.path.join("../models", "model.final.h5"))
     model.summary()
 
     print("training:")
