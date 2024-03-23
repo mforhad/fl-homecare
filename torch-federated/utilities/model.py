@@ -38,11 +38,11 @@ class LeNet(nn.Module):
 def lr_schedule(epoch, lr):
     if epoch > 70 and (epoch - 1) % 10 == 0:
         lr *= 0.1
-    print("Learning rate: ", lr)
+    # print("Learning rate: ", lr)
     return lr
 
 
-def train(model, train_loader, test_loader, num_epochs):
+def train(client_id, model, train_loader, test_loader, num_epochs):
     initial_power = psutil.sensors_battery().percent
 
     criterion = torch.nn.CrossEntropyLoss()
@@ -52,8 +52,6 @@ def train(model, train_loader, test_loader, num_epochs):
     model.to(DEVICE)
     model.train()
     for epoch in range(num_epochs):
-        print(f"Epoch {epoch + 1}/{num_epochs}")
-
         for i, (inputs, labels) in enumerate(train_loader):
             inputs, labels = inputs.to(DEVICE), labels.to(DEVICE)
 
@@ -90,16 +88,16 @@ def train(model, train_loader, test_loader, num_epochs):
             epoch_loss = running_loss / len(test_loader)
             epoch_acc = correct / total
 
-            print(f"Val Loss: {epoch_loss:.4f} | Val Acc: {epoch_acc:.4f}")
+            print(f"Client# {client_id}:Epoch {epoch + 1}/{num_epochs}, Val Loss: {epoch_loss:.4f} | Val Acc: {epoch_acc:.4f}")
 
         scheduler.step()
     
     final_power = psutil.sensors_battery().percent
     energy_consumed = initial_power - final_power
-    print(f"Energy consumed: {energy_consumed:.4f}")
+    print(f"Client# {client_id}: Energy consumed: {energy_consumed:.4f}")
 
 
-def test(model, test_loader, y_test=None, groups_test=None):
+def test(client_id, model, test_loader, y_test=None, groups_test=None):
     criterion = torch.nn.CrossEntropyLoss()
 
     model.eval()
@@ -124,21 +122,6 @@ def test(model, test_loader, y_test=None, groups_test=None):
 
         accuracy = correct / total
         loss = running_loss / len(test_loader)
-        print(f"Test Accuracy: {accuracy:.4f}")
-
-
-    # Save prediction scores
-    if y_test is not None:
-        print("###### Saving prediction scores ########")
-        y_score = []
-        model.eval()
-        with torch.no_grad():
-            for inputs, _ in test_loader:
-                inputs = inputs.to(DEVICE)
-                outputs = model(inputs)
-                y_score.extend(outputs.cpu().numpy()[:, 1])
-
-        output = pd.DataFrame({"y_true": y_test, "y_score": y_score, "subject": groups_test})
-        output.to_csv(os.path.join("output", "homecare_pytorch.csv"), index=False)
+        print(f"Client# {client_id}: Test Accuracy: {accuracy:.4f}")
 
     return loss, accuracy

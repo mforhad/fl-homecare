@@ -31,6 +31,10 @@ trainloader, valloader, testloader = load_partition(partition_id=partition_id, b
 
 # Define Flower client
 class FlowerClient(fl.client.NumPyClient):
+    def __init__(self, client_id) -> None:
+        super().__init__()
+        self.client_id = client_id
+
     def get_parameters(self, config):
         return [val.cpu().numpy() for _, val in net.state_dict().items()]
 
@@ -41,17 +45,17 @@ class FlowerClient(fl.client.NumPyClient):
 
     def fit(self, parameters, config):
         self.set_parameters(parameters)
-        train(net, trainloader, valloader, num_epochs=fl_config.num_epochs)
+        train(self.client_id, net, trainloader, valloader, num_epochs=fl_config.num_epochs)
         return self.get_parameters(config={}), len(trainloader.dataset), {}
 
     def evaluate(self, parameters, config):
         self.set_parameters(parameters)
-        loss, accuracy = test(net, testloader)
+        loss, accuracy = test(self.client_id, net, testloader)
         return loss, len(testloader.dataset), {"accuracy": accuracy}
 
 
 # Start Flower client
 fl.client.start_client(
     server_address="127.0.0.1:8080",
-    client=FlowerClient().to_client(),
+    client=FlowerClient(partition_id).to_client(),
 )
