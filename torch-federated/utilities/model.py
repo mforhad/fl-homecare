@@ -4,6 +4,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+import psutil
+
 from .dataloader import fl_config
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -41,6 +43,8 @@ def lr_schedule(epoch, lr):
 
 
 def train(model, train_loader, test_loader, num_epochs):
+    initial_power = psutil.sensors_battery().percent
+
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters())
     scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: lr_schedule(epoch, fl_config.lr))
@@ -89,6 +93,10 @@ def train(model, train_loader, test_loader, num_epochs):
             print(f"Val Loss: {epoch_loss:.4f} | Val Acc: {epoch_acc:.4f}")
 
         scheduler.step()
+    
+    final_power = psutil.sensors_battery().percent
+    energy_consumed = initial_power - final_power
+    print(f"Energy consumed: {energy_consumed:.4f}")
 
 
 def test(model, test_loader, y_test=None, groups_test=None):
