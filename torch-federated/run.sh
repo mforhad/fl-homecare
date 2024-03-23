@@ -6,7 +6,9 @@ echo "Starting server"
 python server.py &
 sleep 3  # Sleep for 3s to give the server enough time to start
 
-for i in $(seq 0 1); do
+num_clients=$(yq eval '.num_clients' fl-config.yaml)
+
+for i in $(seq 0 $((num_clients - 1))); do
     echo "Starting client $i"
     python client.py --partition-id "$i" &
 done

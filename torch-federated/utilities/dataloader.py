@@ -36,15 +36,20 @@ def data_loader():
 def load_partition(partition_id, batch_size=fl_config.batch_size, val_ratio=fl_config.val_ratio):
     """Download and partitions the MNIST dataset."""
 
-    if fl_config.data_from_s3:
+    if fl_config.is_data_from_s3:
         trainset, testset = load_data_from_s3()
     else:
         trainset, testset = data_loader()
 
     # Split trainset into `num_partitions` trainsets
-    data_points_per_client = len(trainset) // fl_config.num_clients
-    partition_len = [data_points_per_client] * fl_config.num_clients
-    print("data_points_per_client", data_points_per_client)
+    trainset_len = len(trainset)
+    if fl_config.is_heterogeneous:
+        partition_len = distribute_data_randomly(trainset_len, fl_config.num_clients)
+    else:
+        data_points_per_client = trainset_len // fl_config.num_clients
+        partition_len = [data_points_per_client] * fl_config.num_clients
+        print("data_points_per_client", data_points_per_client)
+
     print("partition_len", partition_len)
 
     trainsets = random_split(
@@ -75,3 +80,17 @@ def load_partition(partition_id, batch_size=fl_config.batch_size, val_ratio=fl_c
     testloader = DataLoader(test_partition[partition_id], batch_size=batch_size, shuffle=False)
 
     return trainloader, valloader, testloader
+
+def distribute_data_randomly(data_size, num_clients, seed=2024):
+    # Set the seed for reproducibility
+    torch.manual_seed(seed)
+    
+    parts = torch.randint(1, data_size, (num_clients - 1,))    
+    # Add endpoints to the random numbers
+    parts = torch.cat([torch.tensor([0]), parts, torch.tensor([data_size])])    
+    parts = torch.sort(parts).values
+    
+    # Calculate the lengths of partitions
+    partition_lengths = parts[1:] - parts[:-1]
+    
+    return partition_lengths

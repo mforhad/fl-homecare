@@ -1,9 +1,5 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-import pandas as pd
-import os
 import warnings
 import argparse
 
@@ -17,17 +13,19 @@ from utilities.dataloader import fl_config
 warnings.filterwarnings("ignore", category=UserWarning)
 
 # Get partition id
+choice_list = [i for i in range(fl_config.num_clients)]
+print("### Choise List : ", choice_list)
 parser = argparse.ArgumentParser(description="Flower")
 parser.add_argument(
     "--partition-id",
-    choices=[0, 1],
+    choices=choice_list,
     required=True,
     type=int,
     help="Partition of the dataset divided into 3 iid partitions created artificially.",
 )
 partition_id = parser.parse_args().partition_id
 
-# Load model and data (simple CNN, CIFAR-10)
+
 net = LeNet().to(DEVICE)
 trainloader, valloader, testloader = load_partition(partition_id=partition_id, batch_size=fl_config.batch_size)
 
