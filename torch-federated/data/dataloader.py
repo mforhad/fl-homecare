@@ -4,7 +4,7 @@ from torch.utils.data import TensorDataset, DataLoader, random_split
 import numpy as np
 
 from .aws_s3_bucket import load_data_from_s3
-from .fl_config import FlHomecareConfig
+from config.fl_config import FlHomecareConfig
 
 fl_config = FlHomecareConfig()
 

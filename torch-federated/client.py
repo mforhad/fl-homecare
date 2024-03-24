@@ -6,9 +6,8 @@ import argparse
 import flwr as fl
 
 from collections import OrderedDict
-from utilities.model import LeNet, DEVICE, train, test
-from utilities.dataloader import load_partition
-from utilities.dataloader import fl_config
+from model.model import LeNet, DEVICE, train, test
+from data.dataloader import load_partition, fl_config
 
 warnings.filterwarnings("ignore", category=UserWarning)
 

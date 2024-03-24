@@ -1,12 +1,10 @@
-import os
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
 import psutil
 
-from .dataloader import fl_config
+from data.dataloader import fl_config
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
