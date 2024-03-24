@@ -13,7 +13,9 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     examples = [num_examples for num_examples, _ in metrics]
 
     # Aggregate and return custom metric (weighted average)
-    return {"accuracy": sum(accuracies) / sum(examples)}
+    return {
+        "accuracy": sum(accuracies) / sum(examples)
+        }
 
 
 # Define strategy
@@ -22,7 +24,7 @@ strategy = fl.server.strategy.FedAvg(
     min_evaluate_clients=fl_config.num_clients,
     min_available_clients=fl_config.num_clients,
     evaluate_metrics_aggregation_fn=weighted_average
-    )
+)
 
 # Start Flower server
 fl.server.start_server(

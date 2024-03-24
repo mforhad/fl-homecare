@@ -9,7 +9,7 @@ from .fl_config import FlHomecareConfig
 fl_config = FlHomecareConfig()
 
 def load_numpy_tensor(file_name):
-    file_path = "data/sleepapnea" + file_name + ".npy"
+    file_path = "datasets/sleepapnea" + file_name + ".npy"
     return np.load(file_path)
 
 
