@@ -2,16 +2,16 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-# import psutil
+import psutil
 import time
-import pyRAPL
+# import pyRAPL
 
 from data.dataloader import fl_config
 from utilities.gpu_energy_metric import get_gpu_energy_consumption
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-pyRAPL.setup()
-meter = pyRAPL.Measurement('training_energy_consumption')
+# pyRAPL.setup()
+# meter = pyRAPL.Measurement('training_energy_consumption')
 
 class LeNet(nn.Module):
     def __init__(self):
@@ -46,9 +46,9 @@ def lr_schedule(epoch, lr):
 
 
 def train(client_id, model, train_loader, test_loader, num_epochs):
-    # initial_power = psutil.sensors_battery().percent
+    initial_power = psutil.sensors_battery().percent
     initial_time = time.time()
-    meter.begin()
+    # meter.begin()
 
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters())
@@ -97,25 +97,25 @@ def train(client_id, model, train_loader, test_loader, num_epochs):
 
         scheduler.step()
 
-    meter.end()
+    # meter.end()
 
-    print(f"Client# {client_id}: Training Energy consumed (result): {meter.result}") 
-    print(f"Client# {client_id}: Training Energy consumed (pkg): {meter.result.pkg}")
-    print(f"Client# {client_id}: Training Energy consumed (dram): {meter.result.dram}")
-    print(f"Client# {client_id}: Training Energy consumed (total): {meter.result.pkg + meter.result.dram}")
-    print(f"Client# {client_id}: Training time: {meter.result.duration}")
+    # print(f"Client# {client_id}: Training Energy consumed (result): {meter.result}") 
+    # print(f"Client# {client_id}: Training Energy consumed (pkg): {meter.result.pkg}")
+    # print(f"Client# {client_id}: Training Energy consumed (dram): {meter.result.dram}")
+    # print(f"Client# {client_id}: Training Energy consumed (total): {meter.result.pkg + meter.result.dram}")
+    # print(f"Client# {client_id}: Training time: {meter.result.duration}")
 
-    gpu_energy_use = get_gpu_energy_consumption(meter.result.duration)
-    print(f"Client# {client_id}: GPU Energy consumed: {gpu_energy_use:.4f}")
+    # gpu_energy_use = get_gpu_energy_consumption(meter.result.duration)
+    # print(f"Client# {client_id}: GPU Energy consumed: {gpu_energy_use:.4f}")
     
 
     final_time = time.time()
     training_time = final_time - initial_time
     print(f"Client# {client_id}: Training time: {training_time}")    
 
-    # final_power = psutil.sensors_battery().percent
-    # energy_consumed = initial_power - final_power
-    # print(f"Client# {client_id}: Energy consumed: {energy_consumed:.4f}")
+    final_power = psutil.sensors_battery().percent
+    energy_consumed = initial_power - final_power
+    print(f"Client# {client_id}: Energy consumed: {energy_consumed:.4f}")
 
 
 def test(client_id, model, test_loader, y_test=None, groups_test=None):
