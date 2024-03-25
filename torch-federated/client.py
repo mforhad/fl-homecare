@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 # Get partition id
 choice_list = [i for i in range(fl_config.num_clients)]
-print("### Choise List : ", choice_list)
+print("### Choice List : ", choice_list)
 parser = argparse.ArgumentParser(description="Flower")
 parser.add_argument(
     "--partition-id",
@@ -56,5 +56,6 @@ class FlowerClient(fl.client.NumPyClient):
 # Start Flower client
 fl.client.start_client(
     server_address="34.107.67.170:8080",
+    # server_address="127.0.0.1:8080",
     client=FlowerClient(partition_id).to_client(),
 )

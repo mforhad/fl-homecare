@@ -19,6 +19,8 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
 
 # Define strategy
 strategy = fl.server.strategy.FedAvg(
+    fraction_fit=fl_config.fraction_fit,
+    fraction_evaluate=fl_config.fraction_eval,
     min_fit_clients=fl_config.num_clients,
     min_evaluate_clients=fl_config.num_clients,
     min_available_clients=fl_config.num_clients,
