@@ -8,3 +8,6 @@ lr: 0.155
 data_from_s3: False
 heterogeneous_data_set: True
 use_gpu: True
+energy_weight: 0.5
+training_time_weight: 0.3
+gpu_weight: 0.2

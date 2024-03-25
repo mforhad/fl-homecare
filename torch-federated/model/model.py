@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 import psutil
+import time
 
 from data.dataloader import fl_config
 
@@ -42,6 +43,7 @@ def lr_schedule(epoch, lr):
 
 def train(client_id, model, train_loader, test_loader, num_epochs):
     initial_power = psutil.sensors_battery().percent
+    initial_time = time.time()
 
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters())
@@ -89,7 +91,12 @@ def train(client_id, model, train_loader, test_loader, num_epochs):
             print(f"Client# {client_id}:Epoch {epoch + 1}/{num_epochs}, Val Loss: {epoch_loss:.4f} | Val Acc: {epoch_acc:.4f}")
 
         scheduler.step()
-    
+
+
+    final_time = time.time()
+    training_time = final_time - initial_time
+    print(f"Client# {client_id}: Training time: {training_time}")    
+
     final_power = psutil.sensors_battery().percent
     energy_consumed = initial_power - final_power
     print(f"Client# {client_id}: Energy consumed: {energy_consumed:.4f}")
