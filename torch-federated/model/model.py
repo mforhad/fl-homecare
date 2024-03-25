@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-import psutil
+# import psutil
 import time
 # import pyRAPL
 
@@ -46,7 +46,7 @@ def lr_schedule(epoch, lr):
 
 
 def train(client_id, model, train_loader, test_loader, num_epochs):
-    initial_power = psutil.sensors_battery().percent
+    # initial_power = psutil.sensors_battery().percent
     initial_time = time.time()
     # meter.begin()
 
@@ -113,9 +113,9 @@ def train(client_id, model, train_loader, test_loader, num_epochs):
     training_time = final_time - initial_time
     print(f"Client# {client_id}: Training time: {training_time}")    
 
-    final_power = psutil.sensors_battery().percent
-    energy_consumed = initial_power - final_power
-    print(f"Client# {client_id}: Energy consumed: {energy_consumed:.4f}")
+    # final_power = psutil.sensors_battery().percent
+    # energy_consumed = initial_power - final_power
+    # print(f"Client# {client_id}: Energy consumed: {energy_consumed:.4f}")
 
 
 def test(client_id, model, test_loader, y_test=None, groups_test=None):
