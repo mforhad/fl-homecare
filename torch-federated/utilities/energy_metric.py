@@ -1,13 +1,19 @@
 import pyRAPL
 
+# Initialize pyRAPL
 pyRAPL.setup()
-measure = pyRAPL.Measurement('bar')
-measure.begin()
 
-# ...
-# Instructions to be evaluated.
-# ...
+# Setup output file
+csv_output = pyRAPL.outputs.CSVOutput("utilities/energy_consumption.csv")
 
-measure.end()
+# Measure energy consumption of this function
+@pyRAPL.measureit
+def foo():
+    for i in range(1000000):
+        pass  # Placeholder, does nothing
 
-print(measure.result)
+# Call the measured function
+for _ in range(10):
+    foo()
+
+csv_output.save()
