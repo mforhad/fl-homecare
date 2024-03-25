@@ -7,6 +7,7 @@ import time
 import pyRAPL
 
 from data.dataloader import fl_config
+from utilities.gpu_energy_metric import get_gpu_energy_consumption
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 pyRAPL.setup()
@@ -97,10 +98,16 @@ def train(client_id, model, train_loader, test_loader, num_epochs):
         scheduler.step()
 
     meter.end()
+
+    print(f"Client# {client_id}: Training Energy consumed (result): {meter.result}") 
     print(f"Client# {client_id}: Training Energy consumed (pkg): {meter.result.pkg}")
     print(f"Client# {client_id}: Training Energy consumed (dram): {meter.result.dram}")
     print(f"Client# {client_id}: Training Energy consumed (total): {meter.result.pkg + meter.result.dram}")
-    print(f"Client# {client_id}: Training Energy consumed (result): {meter.result}")
+    print(f"Client# {client_id}: Training time: {meter.result.duration}")
+
+    gpu_energy_use = get_gpu_energy_consumption(meter.result.duration)
+    print(f"Client# {client_id}: GPU Energy consumed: {gpu_energy_use:.4f}")
+    
 
     final_time = time.time()
     training_time = final_time - initial_time
