@@ -13,14 +13,14 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 # Get partition id
 choice_list = [i for i in range(fl_config.num_clients)]
-print("### Choise List : ", choice_list)
+print("### Choice List : ", choice_list)
 parser = argparse.ArgumentParser(description="Flower")
 parser.add_argument(
     "--partition-id",
     choices=choice_list,
     required=True,
     type=int,
-    help="Partition of the dataset divided into 3 iid partitions created artificially.",
+    help="Datasets is partitioned into the number of clients and selected the one with index --partition-id.",
 )
 partition_id = parser.parse_args().partition_id
 

@@ -7,6 +7,8 @@ class FlHomecareConfig:
     def load_config(self):
         with open("fl-config.yaml", 'r') as yamlfile:
             self.config = yaml.safe_load(yamlfile)
+            print("Configuration loaded successfully!")
+            print(self.config)
         
         # define public variables for each configuration
         self.num_epochs = self.config["num_epochs"]
@@ -18,5 +20,10 @@ class FlHomecareConfig:
         self.val_ratio = self.config["val_ratio"]
         self.is_heterogeneous = self.config["heterogeneous_data_set"]
         self.should_use_gpu = self.config["use_gpu"]
+        self.fraction_fit = self.config["fraction_fit"]
+        self.fraction_eval = self.config["fraction_eval"]
+        self.min_fit_clients = self.config["min_fit_clients"]
+        self.min_evaluate_clients = self.config["min_evaluate_clients"]
+        self.round_timeout = self.config["round_timeout"]
 
     
