@@ -1,0 +1,28 @@
+# hc-config.yaml
+strategy:
+  num_clients: 2
+  fraction_fit: 0.5
+  fraction_eval: 0.5
+  min_fit_clients: 1
+  min_evaluate_clients: 1
+
+server-config:
+  num_rounds: 2
+  round_timeout: 500
+
+model:
+  lr: 0.155
+  num_epochs: 5
+  batch_size: 16
+
+data:
+  val_ratio: 0.1
+  data_from_s3: True
+  heterogeneous_data_set: True
+
+metrics:
+  energy_weight: 0.5
+  training_time_weight: 0.3
+  gpu_weight: 0.2
+
+use_gpu: True
