@@ -6,6 +6,7 @@ min_evaluate_clients: 2
 fraction_fit: 0.5
 fraction_eval: 0.5
 num_rounds: 2
+round_timeout: 5000
 batch_size: 16
 val_ratio: 0.1
 lr: 0.155

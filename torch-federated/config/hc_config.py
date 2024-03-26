@@ -24,5 +24,6 @@ class FlHomecareConfig:
         self.fraction_eval = self.config["fraction_eval"]
         self.min_fit_clients = self.config["min_fit_clients"]
         self.min_evaluate_clients = self.config["min_evaluate_clients"]
+        self.round_timeout = self.config["round_timeout"]
 
     
