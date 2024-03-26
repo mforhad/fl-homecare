@@ -33,6 +33,8 @@ class FlowerClient(fl.client.NumPyClient):
     def __init__(self, client_id) -> None:
         super().__init__()
         self.client_id = client_id
+        self.train_time = 0
+        self.energy_consumed = 0
 
     def get_parameters(self, config):
         return [val.cpu().numpy() for _, val in net.state_dict().items()]
@@ -44,7 +46,10 @@ class FlowerClient(fl.client.NumPyClient):
 
     def fit(self, parameters, config):
         self.set_parameters(parameters)
-        train(self.client_id, net, trainloader, valloader, num_epochs=fl_config.num_epochs)
+        tt, ec = train(self.client_id, net, trainloader, valloader, num_epochs=fl_config.num_epochs)
+        self.train_time = tt
+        self.energy_consumed = ec
+
         return self.get_parameters(config={}), len(trainloader.dataset), {}
 
     def evaluate(self, parameters, config):

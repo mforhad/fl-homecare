@@ -10,8 +10,15 @@ from data.dataloader import fl_config
 from utilities.gpu_energy_metric import get_gpu_energy_consumption
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-pyRAPL.setup()
-meter = pyRAPL.Measurement('training_energy_consumption')
+
+consumed_energy = 0
+
+try:
+    pyRAPL.setup()
+    meter = pyRAPL.Measurement('training_energy_consumption')
+except Exception as e:
+    print("pyRAPL does not work on this client!!!")
+    consumed_energy = 0
 
 class LeNet(nn.Module):
     def __init__(self):
@@ -46,9 +53,12 @@ def lr_schedule(epoch, lr):
 
 
 def train(client_id, model, train_loader, test_loader, num_epochs):
-    # initial_power = psutil.sensors_battery().percent
     initial_time = time.time()
-    meter.begin()
+    try:
+        # initial_power = psutil.sensors_battery().percent
+        meter.begin()
+    except Exception:
+        pass
 
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters())
@@ -97,25 +107,35 @@ def train(client_id, model, train_loader, test_loader, num_epochs):
 
         scheduler.step()
 
-    meter.end()
+    try:
+        meter.end()
 
-    print(f"Client# {client_id}: Training Energy consumed (result): {meter.result}") 
-    print(f"Client# {client_id}: Training Energy consumed (pkg): {meter.result.pkg}")
-    print(f"Client# {client_id}: Training Energy consumed (dram): {meter.result.dram}")
-    print(f"Client# {client_id}: Training Energy consumed (total): {meter.result.pkg + meter.result.dram}")
-    print(f"Client# {client_id}: Training time: {meter.result.duration}")
+        dram_energy = meter.result.dram[0]
+        pkg_energy = meter.result.pkg[0]
 
-    gpu_energy_use = get_gpu_energy_consumption(meter.result.duration)
-    print(f"Client# {client_id}: GPU Energy consumed: {gpu_energy_use:.4f}")
-    
+        print(f"Client# {client_id}: Training Energy consumed (result): {meter.result}") 
+        print(f"Client# {client_id}: Training Energy consumed (pkg): {(meter.result.pkg[0] / 1e6):.2f} J")
+        print(f"Client# {client_id}: Training Energy consumed (dram): {(meter.result.dram[0] / 1e6):.2f} J")
+        print(f"Client# {client_id}: Training time: {meter.result.duration}")
+
+        gpu_energy_use = get_gpu_energy_consumption(meter.result.duration)
+        print(f"Client# {client_id}: GPU Energy consumed: {(gpu_energy_use / 1e3):.2f}")
+        consumed_energy = (meter.result.pkg[0] / 1e9) + (meter.result.dram[0] / 1e9) + (gpu_energy_use / 1e3)
+        print(f"Client# {client_id}: Training Energy consumed (total): {consumed_energy:.2f} kJ")
+
+        # final_power = psutil.sensors_battery().percent
+        # energy_consumed = initial_power - final_power
+        # print(f"Client# {client_id}: Energy consumed: {energy_consumed:.4f}")
+
+    except Exception as e:
+        print("Error: ", e)
+        print("Energy consumption cannot be determined for this device")
 
     final_time = time.time()
     training_time = final_time - initial_time
-    print(f"Client# {client_id}: Training time: {training_time}")    
+    print(f"Client# {client_id}: Training time: {training_time}")
 
-    # final_power = psutil.sensors_battery().percent
-    # energy_consumed = initial_power - final_power
-    # print(f"Client# {client_id}: Energy consumed: {energy_consumed:.4f}")
+    return training_time, consumed_energy
 
 
 def test(client_id, model, test_loader, y_test=None, groups_test=None):
