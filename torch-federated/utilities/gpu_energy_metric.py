@@ -1,6 +1,8 @@
 import subprocess
 import time
 
+from data.dataloader import fl_config
+
 def get_gpu_power():
     command = "nvidia-smi --query-gpu=power.draw --format=csv,noheader,nounits"
     output = subprocess.check_output(command, shell=True)
@@ -11,6 +13,9 @@ def get_gpu_power():
     return float(output.strip())
 
 def get_gpu_energy_consumption(time_elapsed):
+    if not fl_config.should_use_gpu:
+        return 0
+
     try:
         return get_gpu_power() * time_elapsed
     except Exception as e:

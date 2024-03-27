@@ -9,7 +9,10 @@ import pyRAPL
 from data.dataloader import fl_config
 from utilities.gpu_energy_metric import get_gpu_energy_consumption
 
-DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+if fl_config.should_use_gpu:
+    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+else:
+    DEVICE = torch.device("cpu")
 
 consumed_energy = 0
 
@@ -17,6 +20,7 @@ try:
     pyRAPL.setup()
     meter = pyRAPL.Measurement('training_energy_consumption')
 except Exception as e:
+    print(f"Error: {e}")
     print("pyRAPL does not work on this client!!!")
     consumed_energy = 0
 
@@ -58,6 +62,7 @@ def train(client_id, model, train_loader, test_loader, num_epochs):
         # initial_power = psutil.sensors_battery().percent
         meter.begin()
     except Exception:
+        consumed_energy = 0
         pass
 
     criterion = torch.nn.CrossEntropyLoss()
@@ -114,13 +119,13 @@ def train(client_id, model, train_loader, test_loader, num_epochs):
         pkg_energy = meter.result.pkg[0]
 
         print(f"Client# {client_id}: Training Energy consumed (result): {meter.result}") 
-        print(f"Client# {client_id}: Training Energy consumed (pkg): {(meter.result.pkg[0] / 1e6):.2f} J")
-        print(f"Client# {client_id}: Training Energy consumed (dram): {(meter.result.dram[0] / 1e6):.2f} J")
+        print(f"Client# {client_id}: Training Energy consumed (pkg): {(pkg_energy / 1e6):.2f} J")
+        print(f"Client# {client_id}: Training Energy consumed (dram): {(dram_energy / 1e6):.2f} J")
         print(f"Client# {client_id}: Training time: {meter.result.duration}")
 
         gpu_energy_use = get_gpu_energy_consumption(meter.result.duration)
         print(f"Client# {client_id}: GPU Energy consumed: {(gpu_energy_use / 1e3):.2f}")
-        consumed_energy = (meter.result.pkg[0] / 1e9) + (meter.result.dram[0] / 1e9) + (gpu_energy_use / 1e3)
+        consumed_energy = (pkg_energy / 1e9) + (dram_energy / 1e9) + (gpu_energy_use / 1e3)
         print(f"Client# {client_id}: Training Energy consumed (total): {consumed_energy:.2f} kJ")
 
         # final_power = psutil.sensors_battery().percent
@@ -128,8 +133,8 @@ def train(client_id, model, train_loader, test_loader, num_epochs):
         # print(f"Client# {client_id}: Energy consumed: {energy_consumed:.4f}")
 
     except Exception as e:
-        print("Error: ", e)
         print("Energy consumption cannot be determined for this device")
+        consumed_energy = 0
 
     final_time = time.time()
     training_time = final_time - initial_time
