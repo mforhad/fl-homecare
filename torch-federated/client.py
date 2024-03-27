@@ -50,7 +50,10 @@ class FlowerClient(fl.client.NumPyClient):
         self.train_time = tt
         self.energy_consumed = ec
 
-        return self.get_parameters(config={}), len(trainloader.dataset), {}
+        return self.get_parameters(config={}), len(trainloader.dataset), {
+            "train_time": self.train_time,
+            "energy_consumed": self.energy_consumed
+        }
 
     def evaluate(self, parameters, config):
         self.set_parameters(parameters)

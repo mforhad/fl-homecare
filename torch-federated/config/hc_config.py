@@ -32,7 +32,13 @@ class FlHomecareConfig:
         self.is_data_from_s3 = self.config["data"]["data_from_s3"]
         self.is_heterogeneous = self.config["data"]["heterogeneous_data_set"]
 
+        # Metrics Configurations
+        self.energy_weight = self.config["metrics"]["energy_weight"]
+        self.accuracy_weight = self.config["metrics"]["accuracy_weight"]
+        self.train_time_weight = self.config["metrics"]["train_time_weight"]
+
         # Miscellaneous configurations
         self.should_use_gpu = self.config["use_gpu"]
+
 
     
