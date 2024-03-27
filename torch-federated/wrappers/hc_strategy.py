@@ -1,5 +1,5 @@
 import random
-from logging import WARNING, INFO
+from logging import WARNING, INFO, DEBUG
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import flwr as fl
@@ -118,9 +118,15 @@ class HomecareStrategy(fl.server.strategy.FedAvg):
         sample_size, min_num_clients = self.num_fit_clients(
             client_manager.num_available()
         )
+
+        log(DEBUG, "Sample size: %s", sample_size)
+        log(DEBUG, "minimum num client: %s", min_num_clients)
+
         clients = client_manager.sample(
             num_clients=sample_size, min_num_clients=min_num_clients
         )
+
+        log(DEBUG, "Sampled clients: %s", clients)
 
         # Return client/config pairs
         return [(client, fit_ins) for client in clients]
